@@ -2,6 +2,7 @@ package tools;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -98,7 +99,31 @@ public class JsonParser {
     }
 
     public <K, V> void readInto(Map<K, V> output) {
-        // TODO: Implement me
+        output = new HashMap<>();
+
+        while (this.reader.hasNext()) {
+            String currentLine = this.reader.nextLine();
+            // Skip the tokenization if curly brace found
+            if (currentLine.trim().equals("{")) {
+                continue;
+            } else if (currentLine.trim().equals("}")) {
+                continue;
+            }
+
+            var tokens = new StringTokenizer(currentLine, ":");
+            int lineTokenCount = 0;
+            while (tokens.hasMoreTokens()) {
+                var currentToken = tokens.nextToken().trim();
+
+                if (DEBUG) {
+                    System.out.printf("\t* currentToken=`%s` *\n", currentToken);
+                }
+            }
+
+            if (DEBUG) {
+                System.out.println();
+            }
+        }
 
         if (DEBUG) {
             // Calls the validJson() method to check if the file is valid JSON
