@@ -7,7 +7,7 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class JsonParser {
-    private File file;
+    private final File file;
     public static final boolean DEBUG = false;
 
     private static class Validator {
@@ -28,8 +28,8 @@ public class JsonParser {
             this.valid = isValid;
         }
 
-        public boolean isValid() {
-            return valid;
+        public boolean isInvalid() {
+            return !valid;
         }
 
         public String getMessage() {
@@ -94,7 +94,7 @@ public class JsonParser {
 
     private Object valueMapper(String value) {
         Validator validator = tokenIsValidType(value);
-        if (!validator.isValid()) {
+        if (validator.isInvalid()) {
             return null;
         }
 
@@ -162,7 +162,7 @@ public class JsonParser {
                     nextTokenIsClosedCurlyBrace = true;
                 }
                 // Check that the right side of the colon is a valid value
-                if (lineTokenCount == 1 && !tokenIsValidType(currentToken).isValid()) {
+                if (lineTokenCount == 1 && tokenIsValidType(currentToken).isInvalid()) {
                     return new Validator(false, "Expected number, string, boolean. Got `%s`.".formatted(currentToken));
                 }
 
@@ -183,7 +183,7 @@ public class JsonParser {
     public HashMap<String, Object> parseJsonToMap() {
         var output = new HashMap<String, Object>();
 
-        if (!validJson().isValid()) {
+        if (validJson().isInvalid()) {
             System.out.printf("Invalid JSON: %s\n", validJson().getMessage());
             return null;
         }
