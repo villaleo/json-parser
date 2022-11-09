@@ -81,6 +81,10 @@ public class JsonParser {
         return new Validator(false, "unknown");
     }
 
+    private String removeQuotes(String token) {
+        return token.substring(1, token.length() - 1);
+    }
+
     @Unfinished({"Does not support nested objects nor arrays."})
     private Validator validJson() {
         Scanner reader;
@@ -144,12 +148,12 @@ public class JsonParser {
         }
     }
 
-    public <K, V> void readInto(Map<K, V> output) {
-        output = new HashMap<>();
+    public <K, V> HashMap<K, V> parseJsonToMap() {
+        var output = new HashMap<K, V>();
 
         if (!validJson().isValid()) {
             System.out.printf("Invalid JSON: %s\n", validJson().getFault());
-            return;
+            return null;
         }
 
         Scanner reader;
@@ -157,7 +161,7 @@ public class JsonParser {
             reader = new Scanner(file);
         } catch (FileNotFoundException err) {
             System.out.printf("File not found: %s", err.getMessage());
-            return;
+            return null;
         }
 
         while (reader.hasNext()) {
@@ -170,13 +174,20 @@ public class JsonParser {
             }
 
             var tokens = new StringTokenizer(currentLine, ":");
-            String key = tokens.nextToken().trim();
+            // Remove quotes from key
+            String key = removeQuotes(tokens.nextToken().trim());
 
             // Remove trailing comma, if present
             String value = tokens.nextToken().trim();
             if (value.contains(",")) {
                 value = value.substring(0, value.length() - 1);
             }
+            // Remove quotes from value if string
+            if (tokenIsString(value)) {
+                value = removeQuotes(value);
+            }
+
+            // Add to output
 
             if (DEBUG) {
                 System.out.printf("\t* Adding key=`%s`, value=`%s`\n", key, value);
