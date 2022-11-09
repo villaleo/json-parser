@@ -43,6 +43,41 @@ public class JsonParser {
         return token.charAt(0) == '"' && token.charAt(token.length() - 1) == '"';
     }
 
+    private Validator tokenIsValidType(String token) {
+        // remove trailing comma, if present
+        if (token.charAt(token.length() - 1) == ',') {
+            token = token.substring(0, token.length() - 1);
+        }
+
+        if (tokenIsString(token)) {
+            return new Validator(true, "string");
+        }
+
+        // check if token is a number
+        boolean isNumber = false;
+        try {
+            Double.parseDouble(token);
+            isNumber = true;
+        } catch (NumberFormatException err) {
+            // Do nothing
+        }
+        try {
+            Integer.parseInt(token);
+            isNumber = true;
+        } catch (NumberFormatException err) {
+            // Do nothing
+        }
+        if (isNumber) {
+            return new Validator(true, "number");
+        }
+
+        // check if token is a boolean
+        if (token.equals("true") || token.equals("false")) {
+            return new Validator(true, "boolean");
+        }
+        return new Validator(false, "unknown");
+    }
+
     @Unfinished({"Does not support nested objects nor arrays."})
     private Validator validJson() {
         boolean openedCurlyBrace = false;
@@ -81,6 +116,10 @@ public class JsonParser {
                     }
                     nextTokenIsClosedCurlyBrace = true;
                 }
+                // Check that the right side of the colon is a valid value
+                if (lineTokenCount == 1 && !tokenIsValidType(currentToken).isValid()) {
+                    return new Validator(false, "Expected number, string, boolean. Got `%s`.".formatted(currentToken));
+                }
 
                 lineTokenCount++;
             }
@@ -88,11 +127,9 @@ public class JsonParser {
 
         if (openedCurlyBrace && closedCurlyBrace) {
             return new Validator(true);
-        }
-        else if (openedCurlyBrace) {
+        } else if (openedCurlyBrace) {
             return new Validator(false, "Expected `}`, found EOF.");
-        }
-        else {
+        } else {
             return new Validator(false, "Expected `{`.");
         }
     }
