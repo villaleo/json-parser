@@ -16,6 +16,7 @@ public class Main {
             System.out.printf("Opened file `%s`.\n", FILE);
         }
 
-        parser.readInto(null);
+        var map = parser.parseJsonToMap();
+        System.out.println(map);
     }
 }
